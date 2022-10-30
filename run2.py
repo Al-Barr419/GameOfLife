@@ -1,13 +1,11 @@
 
-from termios import NL1
 from bauhaus import Encoding, proposition, constraint
 from bauhaus.utils import count_solutions, likelihood
 
 # Encoding that will store all of your constraints
 E = Encoding()
-
-height = 2
-width = 2
+height = 5
+width = 5
 gameLength = 2
 Propositions = []
 #
@@ -18,7 +16,7 @@ for i in range(gameLength):
 
 
 # To create propositions, create classes for them first, annotated with "@proposition" and the Encoding
-@constraint.at_least_one(E)
+
 @proposition(E)
 class AliveProposition:
 
@@ -27,7 +25,7 @@ class AliveProposition:
         self.col = height
         self.time = time
     def __repr__(self):
-        return f"A({self.row},{self.col},{self.time})"
+        return f"A({self.time},{self.row},{self.col})"
 
 
 for l in range(gameLength):
@@ -35,8 +33,7 @@ for l in range(gameLength):
         for h in range(height):    
             Propositions[l][w].append(AliveProposition(h,w,l))
 
-
-print(Propositions)
+Tester = AliveProposition("Barb","Barb","Barb")
 # Different classes for propositions are useful because this allows for more dynamic constraint creation
 # for propositions within that class. For example, you can enforce that "at least one" of the propositions
 # that are instances of this class must be true by using a @constraint decorator.
@@ -75,10 +72,22 @@ def findNeighbours3(pProp):
     w = pProp.row
     h = pProp.col
     t = pProp.time
-    n1 = Propositions[t][w-1][h]
-    n2 = Propositions[t][w][h-1]
-    n3 = Propositions[t][w+1][h]
-    n4 = Propositions[t][w][h+1]
+    try:
+        n1 = Propositions[t][w-1][h]
+    except:
+        n1 = Tester
+    try:
+        n2 = Propositions[t][w][h-1]
+    except:
+        n2 = Tester
+    try:
+        n3 = Propositions[t][w+1][h]
+    except:
+        n3 = Tester
+    try:
+        n4 = Propositions[t][w][h+1]
+    except:
+        n4 = Tester
     return ((~n1 & n2 & n3 & n4) | (n1 & ~n2 & n3 & n4) | (n1 & n2 & ~n3 & n4) | (n1 & n2 & n3 & ~n4))
 
 #Checks if there are 2 or 3 neighbours.. 
@@ -87,23 +96,36 @@ def findNeighbours2V3(pProp):
     w = pProp.row
     h = pProp.col
     t = pProp.time
-    n1 = Propositions[t][w-1][h]
-    n2 = Propositions[t][w][h-1]
-    n3 = Propositions[t][w+1][h]
-    n4 = Propositions[t][w][h+1]
-
+    #gather neighbours, and catch if index is out of bounds. 
+    try:
+        n1 = Propositions[t][w-1][h]
+    except:
+        n1 = Tester
+    try:
+        n2 = Propositions[t][w][h-1]
+    except:
+        n2 = Tester
+    try:
+        n3 = Propositions[t][w+1][h]
+    except:
+        n3 = Tester
+    try:
+        n4 = Propositions[t][w][h+1]
+    except:
+        n4 = Tester
     return ~((~n1 & ~n2 & ~n3 & ~n4) | (n1 & ~n2 & ~n3 & ~n4) | (~n1 & n2 & ~n3 & ~n4) | (~n1 & ~n2 & n3 & ~n4) | (~n1 & ~n2 & ~n3 & n4) | (n1 & n2 & n3 & n4))
 
 def example_theory():
     # Add custom constraints by creating formulas with the variables you created. 
     
     #Add constraint, where neighbours imply the next iteration.  
-    
-    for x in range(gameLength):
+    E.add_constraint(~Tester)
+    for x in range(gameLength-1):
         for y in range(width):
             for z in range(height):    
                 A = Propositions[x][y][z]
-                E.add_constraint(A & findNeighbours2V3(A) >> Propositions[x+1][y][z])
+                E.add_constraint(((A & findNeighbours2V3(A)) >> Propositions[x+1][y][z]))
+                E.add_constraint(((~A & findNeighbours3(A)) >> ~Propositions[x+1][y][z]))
 
     return E
 

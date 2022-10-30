@@ -4,8 +4,8 @@ from bauhaus.utils import count_solutions, likelihood
 
 # Encoding that will store all of your constraints
 E = Encoding()
-height = 5
-width = 5
+height = 2
+width = 2
 gameLength = 2
 Propositions = []
 #
@@ -125,7 +125,9 @@ def example_theory():
             for z in range(height):    
                 A = Propositions[x][y][z]
                 E.add_constraint(((A & findNeighbours2V3(A)) >> Propositions[x+1][y][z]))
-                E.add_constraint(((~A & findNeighbours3(A)) >> ~Propositions[x+1][y][z]))
+                E.add_constraint(((A & ~findNeighbours2V3(A)) >> ~Propositions[x+1][y][z]))
+                E.add_constraint(((~A & findNeighbours3(A)) >> Propositions[x+1][y][z]))
+                E.add_constraint(((~A & ~findNeighbours3(A)) >> ~Propositions[x+1][y][z]))
 
     return E
 
@@ -140,4 +142,5 @@ if __name__ == "__main__":
     print("\nSatisfiable: %s" % T.satisfiable())
     print("# Solutions:ls %d" % count_solutions(T))
     print("   Solution: %s" % T.solve())
+    print(E.introspect(T.solve()))
     

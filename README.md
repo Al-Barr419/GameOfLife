@@ -6,6 +6,8 @@ Change this README.md file to summarize your project, and provide pointers to th
 
 ## Structure
 
+
 * `documents`: Contains folders for both of your draft and final submissions. README.md files are included in both.
-* `run.py`: General wrapper script that you can choose to use or not. Only requirement is that you implement the one function inside of there for the auto-checks.
+* `run.py`: Referance python file, not used anywhere, just used to refer to bauhaus syntax. 
+* `currentRun.py`: Main running function, contains all the propositions and constraints. 
 * `test.py`: Run this file to confirm that your submission has everything required. This essentially just means it will check for the right files and sufficient theory size.

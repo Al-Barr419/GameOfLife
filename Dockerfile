@@ -15,7 +15,6 @@ RUN mkdir /PROJECT
 WORKDIR /PROJECT
 
 # install required elements
-RUN pip install terminedia
 RUN pip3 install --upgrade pip
 RUN pip3 install nnf
 RUN pip3 install bauhaus

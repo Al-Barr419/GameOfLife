@@ -1,4 +1,4 @@
-from terminedia import Screen,pause
+
 
 def create_visualization(Parm, pProp):
     """
@@ -25,19 +25,17 @@ def create_visualization(Parm, pProp):
                 col = str(tcol)
                 print(" A("+time+","+row+","+col+") =" + Parm["A("+time+","+row+","+col+")"], end=" ")
     '''
-    for val in pProp:
-        for key in val:
-            for boob in key:
-                if Parm[boob]:
-                    print("T", end=" ")
-                else:
-                    print("F", end=" ")
-                #print(str(Parm[boob]), end=" ")
-            print("\n")
-        print("\n\n")
+    if Parm != None:
+        for val in pProp:
+            for key in val:
+                for boob in key:
+                    if Parm[boob]:
+                        print("T", end=" ")
+                    else:
+                        print("F", end=" ")
+                    #print(str(Parm[boob]), end=" ")
+                print("\n")
+            print("\n\n")
 
 
     print("   Solution: %s" % Parm)
-    print(str(type(Parm)))
-    for i in Parm:
-        pass

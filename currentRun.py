@@ -11,11 +11,11 @@ config.sat_backend = "kissat"
 E = Encoding()
 
 
-height = 2
-width = 2
-gameLength = 1
+height = 5
+width = 1
+gameLength = 4
 Propositions = []
-constraintType = "reverse" #normal Or reverse in order for which rules to use. 
+constraintType = "normal" #normal Or reverse in order for which rules to use. 
 
 
 for i in range(gameLength+1):
@@ -123,6 +123,7 @@ def example_theory():
         for q in range(width):
             for w in range(height):
                 E.add_constraint(Propositions[gameLength-1][q][w]>> Propositions[gameLength][q][w])
+                E.add_constraint(~Propositions[gameLength-1][q][w]>> ~Propositions[gameLength][q][w])
         return E
 
     elif constraintType == "reverse":
@@ -138,6 +139,7 @@ def example_theory():
         for q in range(width):
             for w in range(height):
                 E.add_constraint(Propositions[gameLength-1][q][w]>> Propositions[gameLength][q][w])
+                E.add_constraint(~Propositions[gameLength-1][q][w]>> ~Propositions[gameLength][q][w])
         return E
 
 

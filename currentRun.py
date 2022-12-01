@@ -1,7 +1,7 @@
 
 from bauhaus import Encoding, proposition, constraint
 from bauhaus.utils import count_solutions, likelihood
-from visualizer import *
+from visualizer import create_visualization
 
 # These two lines make sure a faster SAT solver is used.
 from nnf import config
@@ -9,17 +9,20 @@ config.sat_backend = "kissat"
 
 # Encoding that will store all of your constraints
 E = Encoding()
-height = 3
-width = 3
-gameLength = 2
+height = 2
+width = 8
+gameLength = 1
 Propositions = []
-#
+constraintType = "reverse"
+#normal Or reverse in order for which rules to use. 
+
+
 for i in range(gameLength+1):
     Propositions.append([])
     for w in range(width):
         Propositions[i].append([])
 
-print(Propositions)
+
 # To create propositions, create classes for them first, annotated with "@proposition" and the Encoding
 
 @proposition(E)
@@ -37,7 +40,6 @@ for l in range(gameLength+1):
         for h in range(height):    
             Propositions[l][w].append(AliveProposition(h,w,l))
 
-print(Propositions)
 
 Tester = AliveProposition("Barb","Barb","Barb")
 # Different classes for propositions are useful because this allows for more dynamic constraint creation
@@ -106,22 +108,37 @@ def findNeighbours2V3(pProp):
 def example_theory():
     #Add constraint, where neighbours imply the next iteration.  
     E.add_constraint(~Tester)
-    for x in range(gameLength):
+
+    if constraintType == "normal":
+        for x in range(gameLength):
+            for y in range(width):
+                for z in range(height):    
+                    A = Propositions[x][y][z]
+                    E.add_constraint(((~A & findNeighbours3(A)) >> Propositions[x+1][y][z]))
+                    E.add_constraint(((~A & ~findNeighbours3(A)) >> ~Propositions[x+1][y][z]))
+                    E.add_constraint(((A & findNeighbours2V3(A)) >> Propositions[x+1][y][z]))
+                    E.add_constraint(((A & ~findNeighbours2V3(A)) >> ~Propositions[x+1][y][z]))
+                    #Somehow add the stable state constraint here, 
         for y in range(width):
-            for z in range(height):    
-                A = Propositions[x][y][z]
-                E.add_constraint(((~A & findNeighbours3(A)) >> Propositions[x+1][y][z]))
-                E.add_constraint(((~A & ~findNeighbours3(A)) >> ~Propositions[x+1][y][z]))
-                E.add_constraint(((A & findNeighbours2V3(A)) >> Propositions[x+1][y][z]))
-                E.add_constraint(((A & ~findNeighbours2V3(A)) >> ~Propositions[x+1][y][z]))
-                #Somehow add the stable state constraint here, 
+            for z in range(height):
+                E.add_constraint(Propositions[gameLength-1][y][z]>> Propositions[gameLength][y][z])
+        return E
 
-    for y in range(width):
-        for z in range(height):
-            E.add_constraint(Propositions[gameLength-1][y][z]>> Propositions[gameLength][y][z])
+    elif constraintType == "reverse":
+        for x in range(gameLength):
+            for y in range(width):
+                for z in range(height):    
+                    A = Propositions[x][y][z]
+                    E.add_constraint(((~A & findNeighbours3(A)) >> ~Propositions[x+1][y][z]))
+                    E.add_constraint(((~A & ~findNeighbours3(A)) >> Propositions[x+1][y][z]))
+                    E.add_constraint(((A & findNeighbours2V3(A)) >> ~Propositions[x+1][y][z]))
+                    E.add_constraint(((A & ~findNeighbours2V3(A)) >> Propositions[x+1][y][z]))
+                    #Somehow add the stable state constraint here, 
+        for y in range(width):
+            for z in range(height):
+                E.add_constraint(Propositions[gameLength-1][y][z]>> Propositions[gameLength][y][z])
+        return E
 
-
-    return E
 
 
 if __name__ == "__main__":
@@ -133,7 +150,7 @@ if __name__ == "__main__":
     print("\nSatisfiable: %s" % T.satisfiable())
     print("# Solutions:ls %d" % count_solutions(T))
    # print("   Solution: %s" % T.solve())
-    create_visualization(T.solve())
+    create_visualization(T.solve(), Propositions)
     
     #print(E.introspect(T.solve()))
     

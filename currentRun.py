@@ -9,12 +9,13 @@ config.sat_backend = "kissat"
 
 # Encoding that will store all of your constraints
 E = Encoding()
+
+
 height = 2
-width = 8
+width = 2
 gameLength = 1
 Propositions = []
-constraintType = "reverse"
-#normal Or reverse in order for which rules to use. 
+constraintType = "reverse" #normal Or reverse in order for which rules to use. 
 
 
 for i in range(gameLength+1):
@@ -119,9 +120,9 @@ def example_theory():
                     E.add_constraint(((A & findNeighbours2V3(A)) >> Propositions[x+1][y][z]))
                     E.add_constraint(((A & ~findNeighbours2V3(A)) >> ~Propositions[x+1][y][z]))
                     #Somehow add the stable state constraint here, 
-        for y in range(width):
-            for z in range(height):
-                E.add_constraint(Propositions[gameLength-1][y][z]>> Propositions[gameLength][y][z])
+        for q in range(width):
+            for w in range(height):
+                E.add_constraint(Propositions[gameLength-1][q][w]>> Propositions[gameLength][q][w])
         return E
 
     elif constraintType == "reverse":
@@ -134,9 +135,9 @@ def example_theory():
                     E.add_constraint(((A & findNeighbours2V3(A)) >> ~Propositions[x+1][y][z]))
                     E.add_constraint(((A & ~findNeighbours2V3(A)) >> Propositions[x+1][y][z]))
                     #Somehow add the stable state constraint here, 
-        for y in range(width):
-            for z in range(height):
-                E.add_constraint(Propositions[gameLength-1][y][z]>> Propositions[gameLength][y][z])
+        for q in range(width):
+            for w in range(height):
+                E.add_constraint(Propositions[gameLength-1][q][w]>> Propositions[gameLength][q][w])
         return E
 
 

@@ -3,6 +3,8 @@ FROM ubuntu:20.04
 
 LABEL maintainer="Christian Muise <christian.muise@queensu.ca>"
 
+FROM python:3.5
+RUN apt-get update && apt-get install tk-dev && rm -r /var/lib/apt/lists/*
 # install system-wide deps for python
 RUN apt-get -yqq update
 RUN apt-get -yqq install python3-pip python3-dev curl gnupg build-essential vim git

@@ -13,9 +13,9 @@ E = Encoding()
 
 height = 4
 width = 4
-gameLength = 4
+gameLength = 5
 Propositions = []
-constraintType = "atLeast1" #normal, reverse, atLeast1, totalSolutions in order for which rules to use. 
+constraintType = "normal" #normal, reverse, atLeast1, totalSolutions in order for which rules to use. 
 
 
 for i in range(gameLength+1):

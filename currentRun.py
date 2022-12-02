@@ -11,11 +11,11 @@ config.sat_backend = "kissat"
 E = Encoding()
 
 
-height = 5
-width = 1
+height = 4
+width = 4
 gameLength = 4
 Propositions = []
-constraintType = "normal" #normal Or reverse in order for which rules to use. 
+constraintType = "atLeast1" #normal, reverse, atLeast1, totalSolutions in order for which rules to use. 
 
 
 for i in range(gameLength+1):
@@ -104,7 +104,9 @@ def findNeighbours2V3(pProp):
         n4 = Tester
     else:
         n4 = Propositions[t][w][h+1]
-    #return ~((~n1 & ~n2 & ~n3 & ~n4) | (n1 & ~n2 & ~n3 & ~n4) | (~n1 & n2 & ~n3 & ~n4) | (~n1 & ~n2 & n3 & ~n4) | (~n1 & ~n2 & ~n3 & n4) | (n1 & n2 & n3 & n4))
+    # The comment out return statement is an alternate equivalent version of the current version we used for testing, 
+    # It is equal to ~(0,1, or 4 neibhours), this should be equivalent to (2 or 3 neighbours)  
+    # return ~((~n1 & ~n2 & ~n3 & ~n4) | (n1 & ~n2 & ~n3 & ~n4) | (~n1 & n2 & ~n3 & ~n4) | (~n1 & ~n2 & n3 & ~n4) | (~n1 & ~n2 & ~n3 & n4) | (n1 & n2 & n3 & n4))
     return  (n1 & n2 & ~n3 & ~n4)|(n1 & ~n2 & n3 & ~n4)|(n1 & ~n2 & ~n3 & n4)| (~n1 & n2 & ~n3 & n4)|(~n1 & n2 & n3 & ~n4)|(n1 & n2 & ~n3 & ~n4)| (~n1 & ~n2 & n3 & n4)|(~n1 & n2 & n3 & ~n4)|(n1 & ~n2 & n3 & ~n4)| (~n1 & ~n2 & n3 & n4)|(~n1 & n2 & ~n3 & n4)|(n1 & ~n2 & ~n3 & n4)| ((~n1 & n2 & n3 & n4) | (n1 & ~n2 & n3 & n4) | (n1 & n2 & ~n3 & n4) | (n1 & n2 & n3 & ~n4))
 def example_theory():
     #Add constraint, where neighbours imply the next iteration.  
@@ -115,13 +117,14 @@ def example_theory():
             for y in range(width):
                 for z in range(height):    
                     A = Propositions[x][y][z]
+                    #Constraints Defining the rules of the game
                     E.add_constraint(((~A & findNeighbours3(A)) >> Propositions[x+1][y][z]))
                     E.add_constraint(((~A & ~findNeighbours3(A)) >> ~Propositions[x+1][y][z]))
                     E.add_constraint(((A & findNeighbours2V3(A)) >> Propositions[x+1][y][z]))
                     E.add_constraint(((A & ~findNeighbours2V3(A)) >> ~Propositions[x+1][y][z]))
-                    #Somehow add the stable state constraint here, 
         for q in range(width):
             for w in range(height):
+                #Stable State Constraints,
                 E.add_constraint(Propositions[gameLength-1][q][w]>> Propositions[gameLength][q][w])
                 E.add_constraint(~Propositions[gameLength-1][q][w]>> ~Propositions[gameLength][q][w])
         return E
@@ -130,16 +133,50 @@ def example_theory():
         for x in range(gameLength):
             for y in range(width):
                 for z in range(height):    
+                    #Constraints Defining the rules of the game
                     A = Propositions[x][y][z]
                     E.add_constraint(((~A & findNeighbours3(A)) >> ~Propositions[x+1][y][z]))
                     E.add_constraint(((~A & ~findNeighbours3(A)) >> Propositions[x+1][y][z]))
                     E.add_constraint(((A & findNeighbours2V3(A)) >> ~Propositions[x+1][y][z]))
                     E.add_constraint(((A & ~findNeighbours2V3(A)) >> Propositions[x+1][y][z]))
-                    #Somehow add the stable state constraint here, 
+
         for q in range(width):
             for w in range(height):
+                #Constraints For Stable State, 
                 E.add_constraint(Propositions[gameLength-1][q][w]>> Propositions[gameLength][q][w])
                 E.add_constraint(~Propositions[gameLength-1][q][w]>> ~Propositions[gameLength][q][w])
+        return E
+
+    elif constraintType == "atLeast1":
+        for x in range(gameLength):
+            for y in range(width):
+                for z in range(height):    
+                    #Constraints Defining the rules of the game
+                    A = Propositions[x][y][z]
+                    E.add_constraint(((~A & findNeighbours3(A)) >> Propositions[x+1][y][z]))
+                    E.add_constraint(((~A & ~findNeighbours3(A)) >> ~Propositions[x+1][y][z]))
+                    E.add_constraint(((A & findNeighbours2V3(A)) >> Propositions[x+1][y][z]))
+                    E.add_constraint(((A & ~findNeighbours2V3(A)) >> ~Propositions[x+1][y][z]))
+                    
+        for q in range(width):
+            for w in range(height):
+                #Stable State Constraints
+                E.add_constraint(Propositions[gameLength-1][q][w]>> Propositions[gameLength][q][w])
+                E.add_constraint(~Propositions[gameLength-1][q][w]>> ~Propositions[gameLength][q][w])
+        constraint.add_at_least_one(E, Propositions[gameLength-1])
+        
+        return E
+
+    elif constraintType == "totalSolutions":
+        for x in range(gameLength):
+            for y in range(width):
+                for z in range(height):   
+                    #Constraints Defining the rules of the game
+                    A = Propositions[x][y][z]
+                    E.add_constraint(((~A & findNeighbours3(A)) >> Propositions[x+1][y][z]))
+                    E.add_constraint(((~A & ~findNeighbours3(A)) >> ~Propositions[x+1][y][z]))
+                    E.add_constraint(((A & findNeighbours2V3(A)) >> Propositions[x+1][y][z]))
+                    E.add_constraint(((A & ~findNeighbours2V3(A)) >> ~Propositions[x+1][y][z]))
         return E
 
 

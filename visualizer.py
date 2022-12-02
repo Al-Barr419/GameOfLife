@@ -7,7 +7,6 @@ def create_visualization(Parm, pProp):
                         print("T", end=" ")
                     else:
                         print("F", end=" ")
-
                 print("\n")
             print("\n\n")
     print("   Solution: %s" % Parm)

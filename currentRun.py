@@ -7,24 +7,24 @@ from visualizer import create_visualization
 from nnf import config
 config.sat_backend = "kissat"
 
-# Encoding that will store all of your constraints
 E = Encoding()
 
-
+#Here is where we put the specifications for the model, 
+#Height and width are the details for the size of the grid. 
+#gameLength is the amount of turns  we want to grid to be stable by, must be >0
+#For example, a gameLength of 1 would mean the state is stable within 1 turn, 
 height = 4
 width = 4
-gameLength = 5
+gameLength = 10
 Propositions = []
 constraintType = "normal" #normal, reverse, atLeast1, totalSolutions in order for which rules to use. 
 
-
+#Create nested list to hold the propositions, 
 for i in range(gameLength+1):
     Propositions.append([])
     for w in range(width):
         Propositions[i].append([])
 
-
-# To create propositions, create classes for them first, annotated with "@proposition" and the Encoding
 
 @proposition(E)
 class AliveProposition:
@@ -36,83 +36,85 @@ class AliveProposition:
         return f"A({self.time},{self.row},{self.col})"
 
 
+#Create the propositions for ecah round and place them in the correct spot in the nested list. 
 for l in range(gameLength+1):
     for w in range(width):
         for h in range(height):    
             Propositions[l][w].append(AliveProposition(h,w,l))
 
+#Create the neighbour value, A value to alwyas represent false 
+#when a proposition is bordering the edge of the grid
+Invalid = AliveProposition("Invalid","Invalid","Invalid")
 
-Tester = AliveProposition("Barb","Barb","Barb")
-# Different classes for propositions are useful because this allows for more dynamic constraint creation
-# for propositions within that class. For example, you can enforce that "at least one" of the propositions
-# that are instances of this class must be true by using a @constraint decorator.
-# other options include: at most one, exactly one, at most k, and implies all.
-# For a complete module reference, see https://bauhaus.readthedocs.io/en/latest/bauhaus.html
-
-# Build an example full theory for your setting and return it.
-#
-#  There should be at least 10 variables, and a sufficiently large formula to describe it (>50 operators).
-#  This restriction is fairly minimal, and if there is any concern, reach out to the teaching staff to clarify
-#  what the expectations are.
-
+#Function that creates a statement of conjunts and disjunts representing the proposition,
+#Where there are 3 alive neighbours surrounding the parameter
+#parameters 
+#   pProp - AliveProposition - The space that we want to check. 
+#returns
+#   Boolean Equation representing the statement, 
 def findNeighbours3(pProp):
     w = pProp.row
     h = pProp.col
     t = pProp.time
     
     if w == 0:
-        n1 = Tester
+        n1 = Invalid
     else:
         n1 = Propositions[t][w-1][h]
     if h == 0:
-        n2 = Tester
+        n2 = Invalid
     else:
         n2 = Propositions[t][w][h-1]
         
     if w == width-1:
-        n3 = Tester
+        n3 = Invalid
     else:
         n3 = Propositions[t][w+1][h]
 
     if h == height-1:
-        n4 = Tester
+        n4 = Invalid
     else:
         n4 = Propositions[t][w][h+1]
 
     return ((~n1 & n2 & n3 & n4) | (n1 & ~n2 & n3 & n4) | (n1 & n2 & ~n3 & n4) | (n1 & n2 & n3 & ~n4))
 
-#Checks if there are 2 or 3 neighbours.. 
+#Function that creates a statement of conjunts and disjunts representing the proposition,
+#Where there are 2 or 3 alive neighbours surrounding the parameter
+#parameters 
+#   pProp - AliveProposition - The space that we want to check. 
+#returns
+#   Boolean Equation representing the statement, 
 def findNeighbours2V3(pProp):
-    #Haivng 2 or 3 neighobours is the same as negation 0,1,4 neibhours. 
     w = pProp.row
     h = pProp.col
     t = pProp.time
-    #gather neighbours, and catch if index is out of bounds. 
+    #Set each of the neighoburs to a variable, then create the long string of conjuncts and disjuncts. 
     if w == 0:
-        n1 = Tester
+        n1 = Invalid
     else:
         n1 = Propositions[t][w-1][h]
     if h == 0:
-        n2 = Tester
+        n2 = Invalid
     else:
         n2 = Propositions[t][w][h-1]
     if w == width-1:
-        n3 = Tester
+        n3 = Invalid
     else:
         n3 = Propositions[t][w+1][h]
     if h == height-1:
-        n4 = Tester
+        n4 = Invalid
     else:
         n4 = Propositions[t][w][h+1]
     # The comment out return statement is an alternate equivalent version of the current version we used for testing, 
     # It is equal to ~(0,1, or 4 neibhours), this should be equivalent to (2 or 3 neighbours)  
     # return ~((~n1 & ~n2 & ~n3 & ~n4) | (n1 & ~n2 & ~n3 & ~n4) | (~n1 & n2 & ~n3 & ~n4) | (~n1 & ~n2 & n3 & ~n4) | (~n1 & ~n2 & ~n3 & n4) | (n1 & n2 & n3 & n4))
     return  (n1 & n2 & ~n3 & ~n4)|(n1 & ~n2 & n3 & ~n4)|(n1 & ~n2 & ~n3 & n4)| (~n1 & n2 & ~n3 & n4)|(~n1 & n2 & n3 & ~n4)|(n1 & n2 & ~n3 & ~n4)| (~n1 & ~n2 & n3 & n4)|(~n1 & n2 & n3 & ~n4)|(n1 & ~n2 & n3 & ~n4)| (~n1 & ~n2 & n3 & n4)|(~n1 & n2 & ~n3 & n4)|(n1 & ~n2 & ~n3 & n4)| ((~n1 & n2 & n3 & n4) | (n1 & ~n2 & n3 & n4) | (n1 & n2 & ~n3 & n4) | (n1 & n2 & n3 & ~n4))
-def example_theory():
-    #Add constraint, where neighbours imply the next iteration.  
-    E.add_constraint(~Tester)
-
+def example_theory():   
+    #The Invalid is a proposition that is always false that represents the neighbours that are out of bounds,
+    E.add_constraint(~Invalid)
+    
     if constraintType == "normal":
+        #Iterate through each proposition in the game and define its behavour. 
         for x in range(gameLength):
             for y in range(width):
                 for z in range(height):    
@@ -129,7 +131,9 @@ def example_theory():
                 E.add_constraint(~Propositions[gameLength-1][q][w]>> ~Propositions[gameLength][q][w])
         return E
 
+#   The reverse set of rules outlined in the documentation. 
     elif constraintType == "reverse":
+        #Iterate through each proposition in the game and define its behavour. 
         for x in range(gameLength):
             for y in range(width):
                 for z in range(height):    
@@ -147,7 +151,10 @@ def example_theory():
                 E.add_constraint(~Propositions[gameLength-1][q][w]>> ~Propositions[gameLength][q][w])
         return E
 
+#   Same as normal rules, except with an additional condition where there has to be at 
+#   least 1 alive proposition in the final grid. 
     elif constraintType == "atLeast1":
+        
         for x in range(gameLength):
             for y in range(width):
                 for z in range(height):    
@@ -166,7 +173,8 @@ def example_theory():
         constraint.add_at_least_one(E, Propositions[gameLength-1])
         
         return E
-
+#   A version of normal with the stable state restriction taken out. 
+#   Used to find the total amonut of possible combinations for a certian grid.
     elif constraintType == "totalSolutions":
         for x in range(gameLength):
             for y in range(width):
@@ -183,14 +191,9 @@ def example_theory():
 
 if __name__ == "__main__":
     T = example_theory()
-    # Don't compile until you're finished adding all your constraints!
     T = T.compile()
-    # After compilation (and only after), you can check some of the properties
-    # of your model:
     print("\nSatisfiable: %s" % T.satisfiable())
     print("# Solutions:ls %d" % count_solutions(T))
-   # print("   Solution: %s" % T.solve())
     create_visualization(T.solve(), Propositions)
-    
-    #print(E.introspect(T.solve()))
+
     

@@ -7,7 +7,9 @@ Change this README.md file to summarize your project, and provide pointers to th
 ## Structure
 
 
-* `documents`: Contains folders for both of your draft and final submissions. README.md files are included in both.
-* `run.py`: Referance python file, not used anywhere, just used to refer to bauhaus syntax. 
+* `documents`: Contains all the files for the draft and final submissions. 
+* `visualizer.py`: Helper python file in order to create a visual representation in the terminal. 
 * `currentRun.py`: Main running function, contains all the propositions and constraints. 
 * `test.py`: Run this file to confirm that your submission has everything required. This essentially just means it will check for the right files and sufficient theory size.
+* `Dockerfile`: Unedited Dockerfile used to create the Docker Image. 
+

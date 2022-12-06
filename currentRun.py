@@ -15,7 +15,7 @@ E = Encoding()
 #For example, a gameLength of 1 would mean the state is stable within 1 turn, 
 height = 4
 width = 4
-gameLength = 10
+gameLength = 4
 Propositions = []
 constraintType = "normal" #normal, reverse, atLeast1, totalSolutions in order for which rules to use. 
 

@@ -4,8 +4,8 @@ def create_visualization(Parm, pProp):
         print("Here is an arbitrary stable state with the given configuration: ")
         for val in pProp:
             for key in val:
-                for boob in key:
-                    if Parm[boob]:
+                for barb in key:
+                    if Parm[barb]:
                         print("1", end=" ")
                     else:
                         print("0", end=" ")
